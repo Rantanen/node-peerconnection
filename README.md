@@ -80,6 +80,8 @@ If this is not the case you can use the libjingle variable to specify its locati
 
     node-gyp rebuild --libjingle=/usr/sdks/libjingle/trunk
 
+[libjingle]: http://code.google.com/p/libjingle/ (libjingle; Google Talk Voice and P2P Interoperability Library)
+
 ### Thanks
 
 * Google and rest of the libjingle team for the WebRTC implementation.
