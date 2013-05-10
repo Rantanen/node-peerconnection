@@ -1,0 +1,29 @@
+{
+  "name": "peerconnection",
+  "version": "0.1.0",
+  "author": "Mikko Rantanen <jubjub@jubjubnest.net>",
+  "homepage": "https://github.com/Rantanen/peerconnection",
+  "bugs": "https://github.com/Rantanen/peerconnection/issues",
+  "license": "BSD",
+  "preinstall": null,
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/Rantanen/peerconnection.git"
+  },
+  "//": "Platform limitations is due to lack of precompiled binaries. See README.md for more information.",
+  "os": [
+    "linux"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "devDependencies": {
+    "socket.io": "~0.9.14"
+  },
+  "engines": {
+    "node": "0.10.x"
+  },
+  "dependencies": {
+    "bindings": "~1.1.0"
+  }
+}
