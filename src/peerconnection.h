@@ -57,7 +57,12 @@ class PeerConnection :
 	enum EmitType {
 		emitIceCandidate,
 		emitAnswer,
-		emitAudio
+		emitAudio,
+		emitSignalingChange,
+		emitIceConnectionChange,
+		emitIceGatheringChange,
+		emitIceStateChange,
+		emitStateChange
 	};
 
 	private:
@@ -102,6 +107,14 @@ class PeerConnection :
 
 	virtual void OnError();
 
+	// Triggered when SignalingState changed.
+	virtual void OnSignalingChange( webrtc::PeerConnectionInterface::SignalingState new_state );
+
+	virtual void OnIceConnectionChange( webrtc::PeerConnectionInterface::IceConnectionState new_state );
+	virtual void OnIceGatheringChange( webrtc::PeerConnectionInterface::IceGatheringState new_state );
+	virtual void OnIceStateChange( webrtc::PeerConnectionInterface::IceState new_state );
+
+
 	// Triggered when SignalingState or IceState have changed.
 	// TODO(bemasc): Remove once callers transition to OnSignalingChange.
 	virtual void OnStateChange(StateType state_changed);
@@ -129,5 +142,6 @@ class PeerConnection :
 	static Handle<Value> SetRemoteDescription( const Arguments& args );
 	static Handle<Value> AddIceCandidate( const Arguments& args );
 	static Handle<Value> Transmit( const Arguments& args );
+	static Handle<Value> Close( const Arguments& args );
 	static void Init( Handle<Object> exports );
 };

@@ -29,7 +29,7 @@ Example
         // File for writing the audio.
         var stream = fs.createWriteStream( socket.id + ".pcm" );
 
-		c.on( 'iceCandidate', function( evt ) {
+		c.on( 'icecandidate', function( evt ) {
             // New ice candidate from the local socket.
             // Emit it to the browser.
 			socket.emit( 'icecandidate', evt );
@@ -68,12 +68,13 @@ Compile libjingle on a new platform using
 
     gclient config http://libjingle.googlecode.com/svn/trunk
     gclient sync
-    make peerconnection_client BUILDTYPE=Release
+    cd trunk
+    ninja -C out/Release peerconnection_client
 
-After this the bindings can be compiled with `node-gyp rebuild`. The `binding.gyp` file assumes that libjingle is located next
-to peerclient:
+After this the bindings can be compiled with `node-gyp rebuild`. The
+`binding.gyp` file assumes that libjingle is located next to node-peerclient:
     
-    ../peerclient
+    ../node-peerclient
     ../libjingle/trunk
 
 If this is not the case you can use the libjingle variable to specify its location:

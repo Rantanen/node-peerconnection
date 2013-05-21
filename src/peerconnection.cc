@@ -7,6 +7,59 @@
 
 #include "common.h"
 
+Local<String> ToV8String( webrtc::PeerConnectionInterface::SignalingState state ) {
+	switch( state ) {
+		case webrtc::PeerConnectionInterface::kStable:
+			return String::New( "stable" );
+		case webrtc::PeerConnectionInterface::kHaveLocalOffer:
+			return String::New( "have-local-offer" );
+		case webrtc::PeerConnectionInterface::kHaveRemoteOffer:
+			return String::New( "have-remote-offer" );
+		case webrtc::PeerConnectionInterface::kHaveLocalPrAnswer:
+			return String::New( "have-local-pranswer" );
+		case webrtc::PeerConnectionInterface::kHaveRemotePrAnswer:
+			return String::New( "have-remote-pranswer" );
+		case webrtc::PeerConnectionInterface::kClosed:
+			return String::New( "closed" );
+		default:
+			return String::New( "unknown" );
+	}
+};
+
+Local<String> ToV8String( webrtc::PeerConnectionInterface::IceGatheringState state ) {
+	switch( state ) {
+		case webrtc::PeerConnectionInterface::kIceGatheringNew:
+			return String::New( "new" );
+		case webrtc::PeerConnectionInterface::kIceGatheringGathering:
+			return String::New( "gathering" );
+		case webrtc::PeerConnectionInterface::kIceGatheringComplete:
+			return String::New( "complete" );
+		default:
+			return String::New( "unknown" );
+	}
+};
+
+Local<String> ToV8String( webrtc::PeerConnectionInterface::IceConnectionState state ) {
+	switch( state ) {
+		case webrtc::PeerConnectionInterface::kIceConnectionNew:
+			return String::New( "new" );
+		case webrtc::PeerConnectionInterface::kIceConnectionChecking:
+			return String::New( "checking" );
+		case webrtc::PeerConnectionInterface::kIceConnectionConnected:
+			return String::New( "connected" );
+		case webrtc::PeerConnectionInterface::kIceConnectionCompleted:
+			return String::New( "completed" );
+		case webrtc::PeerConnectionInterface::kIceConnectionFailed:
+			return String::New( "failed" );
+		case webrtc::PeerConnectionInterface::kIceConnectionDisconnected:
+			return String::New( "disconnected" );
+		case webrtc::PeerConnectionInterface::kIceConnectionClosed:
+			return String::New( "closed" );
+		default:
+			return String::New( "unknown" );
+	}
+};
+
 Persistent<Function> PeerConnection::constructor;
 
 struct EmitIceCandidateParams {
@@ -85,7 +138,7 @@ PeerConnection::PeerConnection()
 		new webrtc::RefCountImpl<CallbackAudioDevice>( this );
 
 	_peerConnectionFactory = webrtc::CreatePeerConnectionFactory(
-			_signalThread, _workerThread, _audioDevice, NULL );
+			_signalThread, _workerThread, _audioDevice, NULL, NULL );
 
 	// Create the PeerConnection
 	_peerConnection =
@@ -101,6 +154,7 @@ PeerConnection::PeerConnection()
 
 	stream->AddTrack(audio_track);
 	_peerConnection->AddStream( stream, NULL );
+
 }
 
 PeerConnection::~PeerConnection()
@@ -166,7 +220,8 @@ void PeerConnection::EmitAsync( uv_async_t* req, int status ) {
 		self->_events.pop();
 
 		// Placeholders for the emit parameters.
-		Local<Object> evt = Object::New();
+		Local<Object> obj = Object::New();
+		Local<Value> evt = obj;
 		Local<String> eventName;
 
 		EmitIceCandidateParams* candidateParams = NULL;
@@ -179,15 +234,15 @@ void PeerConnection::EmitAsync( uv_async_t* req, int status ) {
 			// New ICE Candidate.
 			case emitIceCandidate:
 				TRACE( "ICE Candidate" );
-				eventName = String::New( "iceCandidate" );
+				eventName = String::New( "icecandidate" );
 
 				candidateParams =
 					static_cast< EmitIceCandidateParams* >( event.data );
 				event.data = 0;
 
-				evt->Set( String::New( "sdpMid" ), String::New( candidateParams->sdpMid.c_str() ) );
-				evt->Set( String::New( "sdpMLineIndex" ), Number::New( candidateParams->sdpMLineIndex ) );
-				evt->Set( String::New( "candidate" ), String::New( candidateParams->candidate.c_str() ) );
+				obj->Set( String::New( "sdpMid" ), String::New( candidateParams->sdpMid.c_str() ) );
+				obj->Set( String::New( "sdpMLineIndex" ), Number::New( candidateParams->sdpMLineIndex ) );
+				obj->Set( String::New( "candidate" ), String::New( candidateParams->candidate.c_str() ) );
 
 				delete candidateParams;
 				break;
@@ -199,8 +254,8 @@ void PeerConnection::EmitAsync( uv_async_t* req, int status ) {
 				sdpParams = static_cast< EmitSessionDescriptionParams* >( event.data );
 				event.data = 0;
 
-				evt->Set( String::New( "type" ), String::New( sdpParams->type.c_str() ) );
-				evt->Set( String::New( "sdp" ), String::New( sdpParams->sdp.c_str() ) );
+				obj->Set( String::New( "type" ), String::New( sdpParams->type.c_str() ) );
+				obj->Set( String::New( "sdp" ), String::New( sdpParams->sdp.c_str() ) );
 
 				delete candidateParams;
 				break;
@@ -211,15 +266,35 @@ void PeerConnection::EmitAsync( uv_async_t* req, int status ) {
 				audioParams = static_cast< EmitAudioParams* >( event.data );
 				event.data = 0;
 
-				// Construct the buffer.
-				Buffer *slowBuffer = Buffer::New( audioParams->data, audioParams->size );
-				Local<Object> globalObj = Context::GetCurrent()->Global();
-				Local<Function> bufferCtor = Local<Function>::Cast( globalObj->Get( String::New("Buffer" )));
-				Handle<Value> ctorArgs[3] = { slowBuffer->handle_, Integer::New( audioParams->size ), Integer::New(0) };
-				Local<Object> actualBuffer = bufferCtor->NewInstance( 3, ctorArgs );
-				evt->Set( String::New( "data" ), actualBuffer );
+				{
+					CREATE_BUFFER( buffer, audioParams->data, audioParams->size );
+					obj->Set( String::New( "data" ), buffer );
+				}
 
 				delete audioParams;
+				break;
+			case emitSignalingChange:
+				TRACE( "SignalingChange" );
+				eventName = String::New( "signalingstatechange" );
+				evt = ToV8String( self->_peerConnection->signaling_state() );
+				break;
+			case emitIceConnectionChange:
+				TRACE( "IceConnectionChange" );
+				eventName = String::New( "iceconnectionstatechange" );
+				evt = ToV8String( self->_peerConnection->ice_connection_state() );
+				break;
+			case emitIceGatheringChange:
+				TRACE( "IceGatheringChange" );
+				eventName = String::New( "icegatheringstatechange" );
+				evt = ToV8String( self->_peerConnection->ice_gathering_state() );
+				break;
+			case emitIceStateChange:
+				TRACE( "IceStateChange" );
+				eventName = String::New( "icestatechange" );
+				break;
+			case emitStateChange:
+				TRACE( "StateChange" );
+				eventName = String::New( "statechange" );
 				break;
 		}
 
@@ -233,7 +308,24 @@ void PeerConnection::EmitAsync( uv_async_t* req, int status ) {
 void PeerConnection::OnError() {
 }
 
+void PeerConnection::OnSignalingChange( webrtc::PeerConnectionInterface::SignalingState new_state ) {
+	Emit( emitSignalingChange, NULL );
+}
+
+void PeerConnection::OnIceConnectionChange( webrtc::PeerConnectionInterface::IceConnectionState new_state ) {
+	Emit( emitIceConnectionChange, NULL );
+}
+
+void PeerConnection::OnIceGatheringChange( webrtc::PeerConnectionInterface::IceGatheringState new_state ) {
+	Emit( emitIceGatheringChange, NULL );
+}
+
+void PeerConnection::OnIceStateChange( webrtc::PeerConnectionInterface::IceState new_state ) {
+	Emit( emitIceStateChange, NULL );
+}
+
 void PeerConnection::OnStateChange( StateType state_changed ) {
+	Emit( emitStateChange, NULL );
 }
 
 void PeerConnection::OnAddStream( webrtc::MediaStreamInterface* stream ) {
@@ -259,7 +351,7 @@ Handle<Value> PeerConnection::New( const Arguments& args ) {
 					String::New("Use the new operator to construct the PeerConnection.")));
 	}
 
-	PeerConnection* obj = new talk_base::RefCountedObject<PeerConnection>();
+	PeerConnection* obj = new PeerConnection();
 	obj->Wrap( args.This() );
 
 	return args.This();
@@ -336,6 +428,15 @@ Handle<Value> PeerConnection::Transmit( const Arguments& args ) {
 
 	PeerConnection* self = ObjectWrap::Unwrap<PeerConnection>( args.This() );
 	self->_audioDevice->Transmit( data, dataLength / 2 );
+
+	return scope.Close( Undefined() );
+}
+
+Handle<Value> PeerConnection::Close( const Arguments& args ) {
+	HandleScope scope;
+
+	PeerConnection* self = ObjectWrap::Unwrap<PeerConnection>( args.This() );
+	self->_peerConnection->Close();
 
 	return scope.Close( Undefined() );
 }

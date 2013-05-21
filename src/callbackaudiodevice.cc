@@ -44,7 +44,14 @@ void CallbackAudioDevice::Transmit( int8_t* sampleBuffer, uint32_t count ) {
 		_audioCallback->RecordedDataIsAvailable(
 				&sampleBuffer[0],
 				count,
-				2, 1, 48000, 0, 0, 0, newMicLevel );
+				2,  // Bytes per sample
+				1,  // Channels
+				48000,  // Sample rate
+				0,  // Total delay
+				0,  // Clock drift
+				0,  // Mic level
+				false,  // Key pressed
+				newMicLevel );
 	}
 }
 

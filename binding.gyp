@@ -89,7 +89,7 @@
             'dependencies': [
             ],
             'variables': {
-                'libjingle_out%': '<(libjingle)/out/Release/obj.target/',
+                'libjingle_out%': '<(libjingle)/out/Release/obj/',
             },
             'cflags': [
                 '-pthread',
@@ -151,6 +151,7 @@
                     '<(libjingle_out)/third_party/webrtc/modules/libvideo_processing.a',
                     '<(libjingle_out)/third_party/webrtc/modules/libvideo_processing_sse2.a',
                     '<(libjingle_out)/third_party/webrtc/modules/libvideo_render_module.a',
+                    '<(libjingle_out)/third_party/webrtc/modules/libremote_bitrate_estimator.a',
                     '<(libjingle_out)/third_party/webrtc/modules/librtp_rtcp.a',
                     '<(libjingle_out)/third_party/webrtc/modules/libNetEq.a',
                     '<(libjingle_out)/third_party/webrtc/modules/libwebrtc_opus.a',
@@ -158,9 +159,10 @@
                     '<(libjingle_out)/third_party/webrtc/modules/libiSAC.a',
                     '<(libjingle_out)/third_party/webrtc/modules/libCNG.a',
                     '<(libjingle_out)/third_party/webrtc/modules/libaudioproc_debug_proto.a',
-                    '<(libjingle_out)/third_party/webrtc/common_audio/libresampler.a',
-                    '<(libjingle_out)/third_party/webrtc/common_audio/libsignal_processing.a',
-                    '<(libjingle_out)/third_party/webrtc/common_audio/libvad.a',
+                    '<(libjingle_out)/third_party/webrtc/common_audio/libcommon_audio.a',
+                    #'<(libjingle_out)/third_party/webrtc/common_audio/libresampler.a',
+                    #'<(libjingle_out)/third_party/webrtc/common_audio/libsignal_processing.a',
+                    #'<(libjingle_out)/third_party/webrtc/common_audio/libvad.a',
                     '<(libjingle_out)/third_party/libsrtp/libsrtp.a',
                     '<(libjingle_out)/third_party/opus/libopus.a',
                     '<(libjingle_out)/third_party/protobuf/libprotobuf_lite.a',

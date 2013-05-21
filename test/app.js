@@ -7,9 +7,6 @@ var nodertc = require('../index');
 var server = http.createServer(app)
 var io = require('socket.io').listen( server );
 
-var MumbleConnection = require('../../mumble-web/mumble/MumbleConnection');
-
-
 app.get( '/', function( req, res ) {
     res.sendfile( __dirname + '/index.html' );
 });
@@ -27,7 +24,7 @@ io.sockets.on('connection', function (socket) {
         console.log( sdp.sdp );
 		var c = new nodertc.PeerConnection();
 
-		c.on( 'iceCandidate', function( evt ) {
+		c.on( 'icecandidate', function( evt ) {
 			socket.emit( 'icecandidate', evt );
 		});
 
@@ -37,7 +34,7 @@ io.sockets.on('connection', function (socket) {
 
 		c.on( 'audio', function( evt ) {
             console.log( evt.data );
-			fs.write( file, evt.data, 0, evt.data.length );
+            c.transmit( evt.data );
 		});
 
 		c.setRemoteDescription( sdp );
@@ -52,5 +49,5 @@ io.sockets.on('connection', function (socket) {
 });
 
 server.listen( 1234, function( err ) {
-    console.log( 'Test server ready.' );
+    console.log( 'Test server ready at port 1234.' );
 });
