@@ -1,5 +1,4 @@
 
-var fs = require('fs');
 var express = require('express');
 var app = express();
 var http = require('http');
@@ -16,9 +15,6 @@ io.sockets.on('connection', function (socket) {
     console.log( 'New connection' );
     socket.emit('start');
 
-	var fs = require('fs');
-	var file = fs.openSync( socket.id + ".pcm", "w" );
-
     socket.on('call', function( sdp ) {
 		console.log( "New call:" );
         console.log( sdp.sdp );
@@ -33,9 +29,15 @@ io.sockets.on('connection', function (socket) {
 		});
 
 		c.on( 'audio', function( evt ) {
-            console.log( evt.data );
+			console.log('Incoming audio');
             c.transmit( evt.data );
 		});
+
+		c.on( 'signalingstatechange', function( state ) { console.log( 'signaling: ' +  state ); });
+		c.on( 'iceconnectionstatechange', function( state ) { console.log( 'connection: ' + state ); });
+		c.on( 'icegatheringstatechange', function( state ) { console.log( 'gathering: ' + state ); });
+		c.on( 'icestatechange', function( state ) { console.log( 'icestate: ' + state ); });
+		c.on( 'statechange', function( state ) { console.log( 'state: ' + state ); });
 
 		c.setRemoteDescription( sdp );
 		connections.push( c );
@@ -44,6 +46,13 @@ io.sockets.on('connection', function (socket) {
 			console.log( "Adding ice candidate!" );
 			console.dir( evt );
 			c.addIceCandidate( evt );
+		});
+
+		socket.on('disconnect', function () {
+			c.close();
+		});
+		socket.on('close', function () {
+			c.close();
 		});
     });
 });

@@ -46,6 +46,11 @@ socket.on( 'start', function () {
 		pc.setRemoteDescription( answer );
 	});
 
+	document.getElementById( 'closeBtn' ).onclick = function () {
+		console.log("Close clicked");
+		socket.emit('close');
+	};
+
     navigator.getUserMedia({ "audio": true }, function (stream) {
         pc.addStream( stream );
         pc.createOffer( function( desc ) {
@@ -60,6 +65,7 @@ socket.on( 'start', function () {
 </script>
 </head>
 <body>
+<a id="closeBtn">Close</a>
 <video id="stream" autoplay="autoplay">
 </body>
 </html>

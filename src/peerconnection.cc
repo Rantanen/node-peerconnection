@@ -452,9 +452,11 @@ void PeerConnection::Init( Handle<Object> exports ) {
 	tpl->PrototypeTemplate()->Set( String::NewSymbol( "transmit" ),
 			FunctionTemplate::New( Transmit )->GetFunction() );
 
-	// Add the 'acceptCall' method.
 	tpl->PrototypeTemplate()->Set( String::NewSymbol( "setRemoteDescription" ),
 			FunctionTemplate::New( SetRemoteDescription )->GetFunction() );
+
+	tpl->PrototypeTemplate()->Set( String::NewSymbol( "close" ),
+			FunctionTemplate::New( Close )->GetFunction() );
 
 	Persistent<Function> ctor = Persistent<Function>::New( tpl->GetFunction() );
 	exports->Set( String::NewSymbol("PeerConnection"), ctor );
