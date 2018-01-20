@@ -1,6 +1,12 @@
 PeerConnection
 ==============
 
+[![No Maintenance Intended](http://unmaintained.tech/badge.svg)](http://unmaintained.tech/)
+
+_This project implements WebRTC audio/video API on top of Google's libjingle.
+Given the libjingle library was not stable in any way back when the project
+was implemented, the project will not compile without changes any more._
+
 PeerConnection implementation for Node.js. This allows Node.js server to
 receive WebRTC calls from the browsers.  Only Chrome is tested for now. Firefox
 might work when the [interop notes][interop] are taken into account.
